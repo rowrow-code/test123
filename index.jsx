@@ -1,3 +1,13 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// This connects your "Landing" component to the "root" div in your HTML
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Landing /> 
+  </React.StrictMode>
+);
 import { useState, useEffect, useRef, useCallback } from "react";
 
 // ─── DESIGN TOKENS ───────────────────────────────────────────────────────────
@@ -1018,6 +1028,7 @@ export default function App() {
       {/* Floating demo chat widget */}
       {showWidget && page === "landing" && (
         <ChatWidget bot={demoBot} onClose={() => setShowWidget(false)} />
+      import * as Icons from 'lucide-react';
       )}
 
       {/* Show chatbot for created bots on dashboard */}
@@ -1036,13 +1047,4 @@ export default function App() {
     </>
   );
 }
-import React from 'react';
-import ReactDOM from 'react-dom/client';
 
-// This connects your "Landing" component to the "root" div in your HTML
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <Landing /> 
-  </React.StrictMode>
-);
