@@ -1036,3 +1036,13 @@ export default function App() {
     </>
   );
 }
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+
+// This connects your "Landing" component to the "root" div in your HTML
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Landing /> 
+  </React.StrictMode>
+);
