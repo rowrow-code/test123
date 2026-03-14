@@ -1,12 +1,513 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BotForge</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Candela Food Trailer – Best Food On The Street | Aruba</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --fire-red: #D62828;
+      --fire-orange: #F46036;
+      --fire-amber: #F7B731;
+      --coal: #0D0D0D;
+      --char: #1A1A1A;
+      --ash: #2A2A2A;
+      --smoke: #3D3D3D;
+      --light-smoke: #888;
+      --cream: #F5EDD6;
+      --white: #FAFAFA;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: var(--coal);
+      color: var(--cream);
+      font-family: 'Barlow', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+    }
+
+    /* FIRE CANVAS */
+    #fire-canvas {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:0; opacity:0.15;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top:0; left:0; right:0; z-index:200;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 48px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 100%);
+      backdrop-filter: blur(4px);
+      transition: background 0.3s;
+    }
+    nav.scrolled { background: rgba(0,0,0,0.97) !important; }
+    .nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+    .nav-logo img {
+      height:54px; width:54px; object-fit:contain;
+      border-radius:50%; border:2px solid var(--fire-red);
+      background:#111; padding:4px;
+    }
+    .nav-links { display:flex; gap:32px; list-style:none; }
+    .nav-links a {
+      color:var(--cream); text-decoration:none;
+      font-family:'Barlow Condensed',sans-serif; font-weight:600;
+      font-size:13px; letter-spacing:2px; text-transform:uppercase;
+      position:relative; transition:color 0.3s;
+    }
+    .nav-links a::after {
+      content:''; position:absolute; bottom:-3px; left:0;
+      width:0; height:2px; background:var(--fire-orange); transition:width 0.3s;
+    }
+    .nav-links a:hover { color:var(--fire-orange); }
+    .nav-links a:hover::after { width:100%; }
+    
+    .nav-order-btn {
+      background:var(--fire-red); color:#fff; border:none;
+      padding:10px 22px; font-family:'Barlow Condensed',sans-serif;
+      font-weight:700; font-size:13px; letter-spacing:2px; text-transform:uppercase;
+      cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; gap:7px;
+      transition:background 0.3s,transform 0.2s;
+      clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%);
+    }
+    .nav-order-btn:hover { background:var(--fire-orange); transform:scale(1.05); }
+
+    /* MOBILE NAV TOGGLE */
+    .mobile-nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--cream);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    /* MOBILE MENU OVERLAY */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 86px;
+      left: 0;
+      width: 100%;
+      background: rgba(13, 13, 13, 0.98);
+      padding: 20px;
+      flex-direction: column;
+      gap: 20px;
+      z-index: 199;
+      border-bottom: 2px solid var(--fire-red);
+    }
+    .mobile-menu.active { display: flex; }
+    .mobile-menu a {
+      color: var(--cream);
+      text-decoration: none;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    /* RESPONSIVE NAV */
+    @media (max-width: 768px) {
+      .nav-links, .nav-order-btn { display: none; }
+      .mobile-nav-toggle { display: block; }
+      nav { padding: 16px 24px; }
+    }
+
+    /* HERO */
+    .hero {
+      position:relative; min-height:100vh;
+      display:flex; align-items:center; justify-content:center; text-align:center;
+      z-index:1; overflow:hidden;
+    }
+    .hero-photo {
+      position:absolute; inset:0;
+      background-image: url("https://images.unsplash.com/photo-1565123409695-7b5ef63a2efb?auto=format&fit=crop&q=80&w=2000");
+      background-size:cover; background-position:center;
+      filter: brightness(0.3) saturate(1.2);
+      z-index:-1;
+    }
+    .hero-content { max-width:900px; padding:0 20px; }
+    .hero-pre {
+      font-family:'Barlow Condensed', sans-serif; font-weight:700;
+      color:var(--fire-amber); text-transform:uppercase; letter-spacing:6px;
+      font-size:16px; margin-bottom:12px; display:block;
+    }
+    .hero h1 {
+      font-family:'Playfair Display', serif; font-size:clamp(48px, 10vw, 110px);
+      line-height:1; color:var(--white); font-weight:900;
+      margin-bottom:24px; text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .hero h1 span { color: var(--fire-red); font-style: italic; }
+    .hero p {
+      font-size:clamp(16px, 2vw, 20px); max-width:600px; margin:0 auto 40px;
+      color:rgba(245, 237, 214, 0.8); line-height:1.6;
+    }
+    .hero-btns { display:flex; gap:20px; justify-content:center; flex-wrap:wrap; }
+    .btn-primary {
+      background:var(--fire-red); color:white; padding:18px 36px;
+      text-decoration:none; font-family:'Barlow Condensed', sans-serif;
+      font-weight:800; text-transform:uppercase; letter-spacing:2px;
+      transition:0.3s; clip-path:polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+    }
+    .btn-primary:hover { background:var(--fire-orange); transform:translateY(-3px); }
+    .btn-outline {
+      border:2px solid var(--fire-amber); color:var(--fire-amber);
+      padding:16px 36px; text-decoration:none; font-family:'Barlow Condensed', sans-serif;
+      font-weight:800; text-transform:uppercase; letter-spacing:2px;
+      transition:0.3s; clip-path:polygon(0 0, 90% 0, 100% 100%, 10% 100%);
+    }
+    .btn-outline:hover { background:var(--fire-amber); color:var(--coal); transform:translateY(-3px); }
+
+    /* SECTIONS */
+    section { padding: 100px 20px; position:relative; z-index:1; }
+    .section-title { text-align:center; margin-bottom:60px; }
+    .section-title h2 {
+      font-family:'Playfair Display', serif; font-size:48px;
+      color:var(--white); margin-bottom:10px;
+    }
+    .section-title .divider {
+      width:60px; height:4px; background:var(--fire-red); margin:0 auto;
+    }
+
+    /* MENU GRID */
+    .menu-grid {
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap:30px; max-width:1200px; margin:0 auto;
+    }
+    .menu-card {
+      background:var(--char); border:1px solid var(--ash); padding:30px;
+      transition:0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position:relative; overflow:hidden;
+    }
+    .menu-card:hover { border-color:var(--fire-orange); transform:translateY(-10px); }
+    .menu-card h3 { font-family:'Playfair Display', serif; font-size:24px; margin-bottom:10px; color:var(--fire-amber); }
+    .menu-card p { font-size:15px; color:var(--light-smoke); line-height:1.5; margin-bottom:15px; }
+    .menu-card .tags { display:flex; gap:8px; }
+    .tag { font-size:10px; text-transform:uppercase; border:1px solid var(--smoke); padding:2px 8px; color:var(--smoke); border-radius:10px; }
+
+    /* CHATBOT */
+    #chat-trigger {
+      position:fixed; bottom:30px; right:30px; z-index:1000;
+      width:65px; height:65px; background:var(--fire-red);
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      cursor:pointer; box-shadow:0 10px 30px rgba(214,40,40,0.4);
+      transition:0.3s;
+    }
+    #chat-trigger:hover { transform:scale(1.1) rotate(10deg); background:var(--fire-orange); }
+    #chat-trigger i { color:white; font-size:28px; }
+    #chat-notif {
+      position:absolute; top:-5px; right:-5px; width:22px; height:22px;
+      background:var(--fire-amber); border-radius:50%; color:var(--coal);
+      font-size:12px; font-weight:800; display:flex; align-items:center; justify-content:center;
+      animation: pulse 2s infinite;
+    }
+
+    #chat-window {
+      position:fixed; bottom:110px; right:30px; width:350px; height:500px;
+      background:var(--char); border:1px solid var(--ash); z-index:1000;
+      border-radius:20px; flex-direction:column; display:none;
+      box-shadow:0 20px 50px rgba(0,0,0,0.5); overflow:hidden;
+    }
+    #chat-window.open { display:flex; animation: slideUp 0.4s ease; }
+    .chat-header {
+      background:var(--fire-red); padding:20px; display:flex; align-items:center; gap:12px;
+    }
+    .chat-header img { width:40px; height:40px; border-radius:50%; border:2px solid white; }
+    .chat-header h4 { font-family:'Barlow Condensed', sans-serif; text-transform:uppercase; letter-spacing:1px; }
+    
+    #chat-messages { flex:1; padding:20px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; }
+    .msg { max-width:80%; padding:12px 16px; border-radius:15px; font-size:14px; line-height:1.4; }
+    .msg.bot { background:var(--ash); align-self:flex-start; border-bottom-left-radius:2px; }
+    .msg.user { background:var(--fire-orange); color:white; align-self:flex-end; border-bottom-right-radius:2px; }
+
+    .chat-footer { padding:15px; background:var(--coal); border-top:1px solid var(--ash); display:flex; gap:10px; }
+    .chat-footer input {
+      flex:1; background:var(--char); border:1px solid var(--smoke);
+      padding:10px 15px; color:white; border-radius:20px; outline:none;
+    }
+    .chat-footer button {
+      background:var(--fire-red); border:none; width:40px; height:40px;
+      border-radius:50%; color:white; cursor:pointer;
+    }
+
+    .quick-replies { display:flex; flex-wrap:wrap; gap:8px; padding:0 20px 15px; }
+    .chip {
+      font-size:11px; padding:6px 12px; background:rgba(244,96,54,0.1);
+      border:1px solid var(--fire-orange); color:var(--fire-orange);
+      border-radius:15px; cursor:pointer; transition:0.2s;
+    }
+    .chip:hover { background:var(--fire-orange); color:white; }
+
+    @keyframes pulse { 0% { transform:scale(1); } 50% { transform:scale(1.2); } 100% { transform:scale(1); } }
+    @keyframes slideUp { from { transform:translateY(20px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+
+    /* FOOTER */
+    footer { background:var(--char); padding:60px 20px; border-top:2px solid var(--fire-red); }
+    .footer-content { max-width:1200px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px; }
+    .footer-col h4 { font-family:'Barlow Condensed', sans-serif; text-transform:uppercase; letter-spacing:2px; margin-bottom:20px; color:var(--fire-red); }
+    .social-links { display:flex; gap:15px; margin-top:15px; }
+    .social-links a { color:var(--cream); font-size:20px; transition:0.3s; }
+    .social-links a:hover { color:var(--fire-orange); transform:translateY(-3px); }
+  </style>
+</head>
+<body>
+
+  <canvas id="fire-canvas"></canvas>
+
+  <nav id="main-nav">
+    <a href="#" class="nav-logo">
+      <img src="https://via.placeholder.com/100" alt="Candela Logo">
+      <span style="font-family:'Playfair Display'; font-weight:900; color:white; font-size:24px;">CANDELA</span>
+    </a>
+    
+    <ul class="nav-links">
+      <li><a href="#experience">The Experience</a></li>
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#location">Where to Find Us</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+
+    <a href="https://wa.me/2971234567" class="nav-order-btn">
+      <i class="fa-brands fa-whatsapp"></i> Order Now
+    </a>
+
+    <button class="mobile-nav-toggle" id="mobile-toggle">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#experience" onclick="toggleMobileMenu()">The Experience</a>
+    <a href="#menu" onclick="toggleMobileMenu()">Menu</a>
+    <a href="#location" onclick="toggleMobileMenu()">Where to Find Us</a>
+    <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
+    <a href="https://wa.me/2971234567" style="color: var(--fire-red); font-weight: bold;">Order Now</a>
+  </div>
+
+  <section class="hero">
+    <div class="hero-photo"></div>
+    <div class="hero-content">
+      <span class="hero-pre">Serving the Flame in Aruba</span>
+      <h1>Best Food <span>On The Street</span></h1>
+      <p>Smoky meats, artisan sauces, and the true soul of Aruban street food. When the fire glows, the flavor flows.</p>
+      <div class="hero-btns">
+        <a href="#menu" class="btn-primary">View the Menu</a>
+        <a href="#location" class="btn-outline">Find our Spot</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="menu">
+    <div class="section-title">
+      <h2>The Fire Menu</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="menu-grid">
+      <div class="menu-card">
+        <div class="tag">Signature</div>
+        <h3>The Inferno Burger</h3>
+        <p>Double angus patty, pepper jack cheese, jalapeño relish, and our secret habanero 'Candela' sauce.</p>
+      </div>
+      <div class="menu-card">
+        <h3>Charcoal Ribs</h3>
+        <p>Half rack of fall-off-the-bone ribs glazed in guava-whiskey BBQ sauce, served with Cajun fries.</p>
+      </div>
+      <div class="menu-card">
+        <div class="tag">Local Fav</div>
+        <h3>Street-Side Kabritu</h3>
+        <p>Slow-roasted goat chunks marinated in local herbs, charred to perfection over open flame.</p>
+      </div>
+    </div>
+  </section>
+
+  <div id="chat-trigger" onclick="toggleChat()">
+    <div id="chat-notif">1</div>
+    <i class="fa-solid fa-fire" id="chat-bubble-icon"></i>
+  </div>
+
+  <div id="chat-window">
+    <div class="chat-header">
+      <img src="https://via.placeholder.com/50" alt="Bot Avatar">
+      <div>
+        <h4>Candela Support</h4>
+        <small style="color:rgba(255,255,255,0.7)">Online • Ready to Fire Up</small>
+      </div>
+    </div>
+    <div id="chat-messages"></div>
+    <div class="quick-replies">
+      <div class="chip" onclick="quickAsk('menu')">Menu</div>
+      <div class="chip" onclick="quickAsk('location')">Location</div>
+      <div class="chip" onclick="quickAsk('hours')">Hours</div>
+      <div class="chip" onclick="quickAsk('order')">How to Order</div>
+    </div>
+    <div class="chat-footer">
+      <input type="text" id="chat-input" placeholder="Type a question..." onkeypress="if(event.key==='Enter') sendMessage()">
+      <button onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-content">
+      <div class="footer-col">
+        <h4>Location</h4>
+        <p>Palm Beach Area<br>Across from the Windmill<br>Aruba</p>
+      </div>
+      <div class="footer-col">
+        <h4>Hours</h4>
+        <p>Tues - Sun: 7:00 PM - 2:00 AM<br>Mon: Closed (Preparing the flame)</p>
+      </div>
+      <div class="footer-col">
+        <h4>Follow the Smoke</h4>
+        <div class="social-links">
+          <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#"><i class="fa-brands fa-facebook"></i></a>
+          <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:50px; font-size:12px; color:var(--smoke);">
+      © 2024 Candela Food Trailer Aruba. All Rights Reserved.
+    </div>
+  </footer>
+
+  <script>
+    // MOBILE MENU LOGIC
+    const mobileToggle = document.getElementById('mobile-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    function toggleMobileMenu() {
+      mobileMenu.classList.toggle('active');
+      const icon = mobileToggle.querySelector('i');
+      if (mobileMenu.classList.contains('active')) {
+        icon.className = 'fa-solid fa-xmark';
+      } else {
+        icon.className = 'fa-solid fa-bars';
+      }
+    }
+
+    mobileToggle.addEventListener('click', toggleMobileMenu);
+
+    // FIRE CANVAS EFFECT
+    const canvas = document.getElementById('fire-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+
+    function init() {
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * w;
+        this.y = h + Math.random() * 100;
+        this.s = Math.random() * 3 + 1;
+        this.v = Math.random() * 2 + 1;
+        this.a = Math.random() * 0.05 + 0.01;
+      }
+      draw() {
+        ctx.fillStyle = 'rgba(214, 40, 40, ' + this.a + ')';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.s, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      update() {
+        this.y -= this.v;
+        if (this.y < -10) this.y = h + 10;
+        this.draw();
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => p.update());
+      requestAnimationFrame(animate);
+    }
+
+    init();
+    for (let i = 0; i < 50; i++) particles.push(new Particle());
+    animate();
+    window.onresize = init;
+
+    // NAV SCROLL
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('main-nav');
+      if (window.scrollY > 50) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    });
+
+    // CHATBOT LOGIC
+    let chatOpen = false;
+    const KB = {
+      menu: `Check out our <b>Menu</b> section on the site! Highlights include our <b>Inferno Burger</b> and <b>Charcoal Ribs</b>. All items are flame-grilled fresh.`,
+      hours: `We start the fire at <b>7:00 PM</b> and keep it burning until <b>2:00 AM</b>, Tuesday through Sunday. We are closed on Mondays.`,
+      location: `We are located in the <b>Palm Beach Area</b>, right across from the historic Old Windmill. Look for the smoke and the red trailer!`,
+      order: `You can order directly via <b>WhatsApp (+297 123 4567)</b> or just stop by the trailer. For delivery, find us on local Aruba delivery apps!`,
+      popular: `Our <b>Inferno Burger</b> is legendary, but local regulars swear by the <b>Street-Side Kabritu</b>.`,
+      price: `I'm sorry, I cannot provide specific pricing information here. Please check our trailer menu or WhatsApp us for current rates!`
+    };
+
+    function matchIntent(text) {
+      const t = text.toLowerCase();
+      if (t.includes('price') || t.includes('cost') || t.includes('how much')) return KB.price;
+      if (t.includes('menu') || t.includes('eat') || t.includes('food')) return KB.menu;
+      if (t.includes('where') || t.includes('location') || t.includes('find')) return KB.location;
+      if (t.includes('when') || t.includes('hours') || t.includes('open')) return KB.hours;
+      if (t.includes('order') || t.includes('whatsapp') || t.includes('buy')) return KB.order;
+      if (t.includes('popular') || t.includes('best') || t.includes('recommend')) return KB.popular;
+      return `I'm not quite sure about that! I can help you with:<br>&bull; <b>Menu</b> highlights<br>&bull; <b>Hours</b> of operation<br>&bull; <b>Locations</b> — where to find us<br>&bull; <b>How to Order</b> — WhatsApp or online<br><br>For more info, email us: <a href="mailto:candelafoodtrailer@gmail.com">candelafoodtrailer@gmail.com</a>`;
+    }
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chat-window').classList.toggle('open', chatOpen);
+      const icon = document.getElementById('chat-bubble-icon');
+      icon.className = chatOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-fire';
+      document.getElementById('chat-notif').style.display = chatOpen ? 'none' : 'flex';
+      if (chatOpen && document.getElementById('chat-messages').childElementCount === 0) {
+        setTimeout(() => {
+          addMessage(`🔥 <b>Welcome to Candela!</b><br>I'm your fire-starter bot. What can I help you with tonight?`, 'bot');
+        }, 500);
+      }
+    }
+
+    function addMessage(text, side) {
+      const container = document.getElementById('chat-messages');
+      const el = document.createElement('div');
+      el.className = `msg ${side}`;
+      el.innerHTML = text;
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      input.value = '';
+      setTimeout(() => {
+        addMessage(matchIntent(text), 'bot');
+      }, 600);
+    }
+
+    function quickAsk(type) {
+      const labels = { 
+        menu:'Show me the menu', 
+        hours:'What are your opening hours?', 
+        location:'Where are you located?', 
+        order:'How can I place an order?'
+      };
+      addMessage(labels[type], 'user');
+      setTimeout(() => {
+        addMessage(KB[type], 'bot');
+      }, 600);
+    }
+  </script>
+</body>
 </html>
